@@ -401,6 +401,10 @@
                 display: none;
             }
 
+            .theme-toggle {
+                display: none;
+            }
+
             .hero h1 {
                 font-size: 2.5rem;
             }
@@ -573,31 +577,43 @@
             if (savedTheme) {
                 return savedTheme;
             }
+            // Check system preference
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         };
 
         // Set theme
         const setTheme = (theme) => {
             html.setAttribute('data-theme', theme);
-            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            if (themeIcon) {
+                themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
             localStorage.setItem('theme', theme);
         };
 
-        // Initialize theme
-        setTheme(getThemePreference());
+        // Initialize theme immediately
+        const initialTheme = getThemePreference();
+        html.setAttribute('data-theme', initialTheme);
+        if (themeIcon) {
+            themeIcon.textContent = initialTheme === 'dark' ? '☀️' : '🌙';
+        }
 
-        // Toggle theme on button click
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            setTheme(newTheme);
-        });
+        // Toggle theme on button click (only on desktop)
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                setTheme(newTheme);
+            });
+        }
 
-        // Listen for system theme changes
+        // Listen for system theme changes (only update if user hasn't manually set a preference)
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            // Only update if user hasn't manually set a preference
             if (!localStorage.getItem('theme')) {
-                setTheme(e.matches ? 'dark' : 'light');
+                const newTheme = e.matches ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                if (themeIcon) {
+                    themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+                }
             }
         });
     </script>
